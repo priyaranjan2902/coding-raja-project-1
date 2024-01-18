@@ -1,0 +1,273 @@
+
+Social Media Sentiment Analysis of Twitter using Machine Learning
+Step 1: Gathering Data
+Step 2: Cleaning Data
+Step 3: Data Analysis
+Step 4: Model
+Step 5: Testing and Analysing Model
+Step 1: Data Gathering
+2 databases:
+
+https://www.kaggle.com/gargmanas/sentimental-analysis-for-tweets
+https://www.kaggle.com/kazanova/sentiment140
+Labelling the data and analysising sentiments ; Analysis and observations on sentiment analysis: Attached in this github repo.
+
+Step 2: Cleaning of given Data
+# Step 2: Cleaning Data involves Removing Stop Words + Lemmatization + Remove [non-word charecters, single charecter, spaces , URLs]
+from sklearn.model_selection import train_test_split
+import re
+import nltk
+nltk.download('wordnet')
+nltk.download('stopwords')
+from nltk.stem import WordNetLemmatizer
+from nltk.corpus import stopwords
+import pandas as pd
+import string
+
+def getsentiment(x):
+    if(x==1):
+        return -1*x
+    else:
+        return x+4
+
+tabledep = pd.read_csv("sentimentdep.csv")
+tabledep["label"] = tabledep["label"].apply(getsentiment)
+coldep = [tabledep["message"],tabledep["label"]]
+headers=["message","sentiment"]
+datadep = pd.concat(coldep, axis=1,keys=headers)
+print(datadep)
+
+tablenorm = pd.read_csv("sentimentnorm.csv",encoding='latin-1',header=None)
+colnorm = [tablenorm[5],tablenorm[0]]
+headers=["message","sentiment"]
+datanorm = pd.concat(colnorm, axis=1,keys=headers)
+print(datanorm)
+
+dataframes = [datadep,datanorm]
+datatotal = pd.concat(dataframes)
+
+print(datatotal)
+
+# data = data.head(5000)
+input_data = datatotal['message']
+output_data = datatotal['sentiment']
+
+
+sentence = []
+
+WordReduced = WordNetLemmatizer()
+
+# Stop Words Set
+stopWordsSet = set(stopwords.words('english'))
+# print(stopWordsSet)
+
+
+# cleaning data
+def data_cleaning(data_sentence):
+    data_sentence = re.sub(r'[^\w\s]','',str(data_sentence))
+    
+    data_sentence = re.sub(r'\s+[a-zA-Z]\s+','',data_sentence)
+
+    data_sentence = re.sub(r'\s\s+','',data_sentence)
+
+    data_sentence = re.sub('((www.[^s]+)| (https?://[^s]))','',data_sentence)
+
+    data_sentence= data_sentence.lower()
+
+    data_sentence = data_sentence.split()
+    
+    data_sentence = [WordReduced.lemmatize(word) for word in data_sentence]
+    
+    data_sentence = [word for word in data_sentence if word not in stopWordsSet]
+    
+    data_sentence = ' '.join(data_sentence)
+    
+    return data_sentence
+
+datatotal["message"] = datatotal["message"].apply(lambda x: data_cleaning(x))
+print("done")
+[nltk_data] Downloading package wordnet to /Users/anusha/nltk_data...
+[nltk_data]   Package wordnet is already up-to-date!
+[nltk_data] Downloading package stopwords to
+[nltk_data]     /Users/anusha/nltk_data...
+[nltk_data]   Package stopwords is already up-to-date!
+                                                 message  sentiment
+0      just had a real good moment. i missssssssss hi...          4
+1             is reading manga  http://plurk.com/p/mzp1e          4
+2      @comeagainjen http://twitpic.com/2y2lx - http:...          4
+3      @lapcat Need to send 'em to my accountant tomo...          4
+4          ADD ME ON MYSPACE!!!  myspace.com/LookThunder          4
+...                                                  ...        ...
+10309  No Depression by G Herbo is my mood from now o...         -1
+10310  What do you do when depression succumbs the br...         -1
+10311  Ketamine Nasal Spray Shows Promise Against Dep...         -1
+10312  dont mistake a bad day with depression! everyo...         -1
+10313                                                  0         -1
+
+[10314 rows x 2 columns]
+                                                   message  sentiment
+0        @switchfoot http://twitpic.com/2y1zl - Awww, t...          0
+1        is upset that he can't update his Facebook by ...          0
+2        @Kenichan I dived many times for the ball. Man...          0
+3          my whole body feels itchy and like its on fire           0
+4        @nationwideclass no, it's not behaving at all....          0
+...                                                    ...        ...
+1599995  Just woke up. Having no school is the best fee...          4
+1599996  TheWDB.com - Very cool to hear old Walt interv...          4
+1599997  Are you ready for your MoJo Makeover? Ask me f...          4
+1599998  Happy 38th Birthday to my boo of alll time!!! ...          4
+1599999  happy #charitytuesday @theNSPCC @SparksCharity...          4
+
+[1600000 rows x 2 columns]
+                                                   message  sentiment
+0        just had a real good moment. i missssssssss hi...          4
+1               is reading manga  http://plurk.com/p/mzp1e          4
+2        @comeagainjen http://twitpic.com/2y2lx - http:...          4
+3        @lapcat Need to send 'em to my accountant tomo...          4
+4            ADD ME ON MYSPACE!!!  myspace.com/LookThunder          4
+...                                                    ...        ...
+1599995  Just woke up. Having no school is the best fee...          4
+1599996  TheWDB.com - Very cool to hear old Walt interv...          4
+1599997  Are you ready for your MoJo Makeover? Ask me f...          4
+1599998  Happy 38th Birthday to my boo of alll time!!! ...          4
+1599999  happy #charitytuesday @theNSPCC @SparksCharity...          4
+
+[1610314 rows x 2 columns]
+done
+Step 3: Analysis of Cleaned Data
+print(datatotal)
+print(datatotal[datatotal["sentiment"] == -1]["message"])
+                                                   message  sentiment
+0                     hadreal good momentmissssssssss much          4
+1                          reading mangahttpplurkcompmzp1e          4
+2                     comeagainjen httptwitpiccom2y2lxhttp          4
+3        lapcat need send em accountant tomorrow oddlyw...          4
+4                         add myspacemyspacecomlookthunder          4
+...                                                    ...        ...
+1599995                      woke school best feeling ever          4
+1599996  thewdbcomvery cool hear old walt interviewsâ h...          4
+1599997                     ready mojo makeover ask detail          4
+1599998  happy 38th birthday boo alll time tupac amaru ...          4
+1599999  happy charitytuesday thenspcc sparkscharity sp...          4
+
+[1610314 rows x 2 columns]
+8000     lack understanding issmall significant part ca...
+8001     told parent depression hard get genpeople unde...
+8002     depression somethingdont speak even going also...
+8003     made myselftortilla filled pbj depression cure...
+8004     worldofoutlawsam gonna need depression med soo...
+                               ...                        
+10309    depression byherbo mood im done stressing peop...
+10310    depression succumbs brain make feel like youll...
+10311    ketamine nasal spray show promise depression s...
+10312        dont mistakebad day depression everyone ha em
+10313                                                    0
+Name: message, Length: 2314, dtype: object
+# WordCloud on Depression Sentiments
+print("start")
+
+from PIL import Image
+from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
+import matplotlib.pyplot as plt
+
+word_cloud_data = datatotal[datatotal['sentiment'] == -1]['message']
+plt.figure(figsize = (20,20))
+wc_img_data = WordCloud(max_words = 500, width = 1800 , height = 1800).generate(" ".join(word_cloud_data))
+plt.imshow(wc_img_data)
+print("done")
+start
+done
+
+# WordCloud on Depressive + Negative Tweets
+print("start")
+
+from PIL import Image
+from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
+import matplotlib.pyplot as plt
+
+# print(datatotal)
+# print(datatotal[datatotal["sentiment"] == -1]["message"])
+word_cloud_data = datatotal[datatotal['sentiment'] <= 0]['message']
+plt.figure(figsize = (20,20))
+wc_img_data = WordCloud(max_words = 500, width = 1800 , height = 1800).generate(" ".join(word_cloud_data))
+plt.imshow(wc_img_data)
+print("done")
+start
+done
+
+# WordCloud on Positive Tweets
+print("start")
+
+from PIL import Image
+from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
+import matplotlib.pyplot as plt
+
+# print(datatotal)
+# print(datatotal[datatotal["sentiment"] == -1]["message"])
+word_cloud_data = datatotal[datatotal['sentiment'] == 4]['message']
+plt.figure(figsize = (20,20))
+wc_img_data = WordCloud(max_words = 500, width = 1800 , height = 1800).generate(" ".join(word_cloud_data))
+plt.imshow(wc_img_data)
+print("done")
+start
+done
+
+Step 4: Training the Model
+# Splitting data into train and test sets
+from sklearn.model_selection import train_test_split
+input_data = datatotal["message"]
+output_data = datatotal["sentiment"]
+input_train,input_test,output_train,output_test = train_test_split(input_data , output_data, test_size = 0.2,random_state=156654)
+print(input_train.shape)
+print(input_test.shape)
+(1288251,)
+(322063,)
+# Vectorizing input to input into model
+print("start")
+from sklearn.feature_extraction.text import TfidfVectorizer
+vectoriser= TfidfVectorizer(ngram_range=(1,2),max_features = 500000)
+vectoriser.fit(input_train)
+input_train = vectoriser.transform(input_train)
+input_test = vectoriser.transform(input_test)
+print("done")
+start
+done
+print("start")
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
+# model = KNeighborsClassifier(n_neighbors=4)
+model = LogisticRegression(C=2,max_iter= 1000,n_jobs=-1)
+print("done")
+# model = DecisionTreeClassifier()
+model.fit(input_train, output_train)
+print("done")
+start
+done
+done
+Step 5: Model Testing and Analysis
+from sklearn import metrics
+from sklearn.metrics import classification_report
+
+output_predicted = model.predict(input_test)
+print("done")
+
+print(classification_report(output_test,output_predicted))
+print("done")
+
+print(metrics.accuracy_score(output_test,output_predicted))
+print("done")
+done
+              precision    recall  f1-score   support
+
+          -1       0.93      0.70      0.80       430
+           0       0.78      0.75      0.76    160202
+           4       0.76      0.79      0.78    161431
+
+    accuracy                           0.77    322063
+   macro avg       0.82      0.75      0.78    322063
+weighted avg       0.77      0.77      0.77    322063
+
+done
+0.7708491816818449
+done
